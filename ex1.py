@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 np.random.default_rng(seed=100)
+SHOW = True
 
 df = pd.read_csv('Data_intreview.csv', )
 df['Datums.un.laiks'] = '2000.' + df['Datums.un.laiks'].astype(str)
@@ -11,7 +12,11 @@ df['Datums.un.laiks'] = pd.to_datetime(df['Datums.un.laiks'], format="%Y.%m.%d %
 
 df.boxplot(column=["x1", "x2", "x3"])
 # plt.title("Kastu grafiki trīs stacijās")
-plt.show()
+if SHOW:
+    plt.plot()
+else:
+    plt.savefig('kastes_kluda.png', dpi=150)
+fig = plt.figure()
 
 cutoff = max(max(df["x1"]),max(df["x2"]))
 
@@ -36,11 +41,20 @@ for i in range(12):
 
 
 df.boxplot(column=["x1", "x2", "x3"])
-plt.show()
+plt.gca().set_ylim([-1,17])
+if SHOW:
+    plt.show()
+else:
+    plt.savefig("kastes_labs.png")
+    fig = plt.figure()
 
 plt.boxplot(np.random.gamma(3.5, 0.8, size=len(df)))
-plt.show()
-
+plt.grid(visible=True, which='major')
+plt.gca().set_ylim([-1,17])
+if SHOW:
+    plt.show()
+else:
+    plt.savefig('Gamma.png')
 
 
 # Acīmredzami sadalījums ir tikai pozitīvs, jo apakšējā vērtība visās stacijās ir nulle. Visticamāk, ka sadalījums nav ierobežots no augšas, jo maksimālās vērtības visiem ir dažādas un augšējā aste ir vidēji gara. Tomēr vērtības nav īpaši lielas, ar 500 000 gadījumiem neviens nepārsniedz pat 20 (atskaitot atsevišķās 15 minūtes trešajā stacijā).

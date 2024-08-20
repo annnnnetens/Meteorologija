@@ -6,10 +6,8 @@ from urllib.request import urlretrieve
 from collections import Counter
 import matplotlib.pyplot as plt
 import geopandas as gpd
-# import geodatasets
-# import plotly.express as px
-# import pycountry
-
+import pycountry
+SHOW=True
 
 Vol_URL = 'https://wis.wmo.int/operational-info/VolumeC1/VolC1.txt'
 ESWI_URL = 'https://wis.wmo.int/operational-info/GTS_routeing/ESWI/ESWIroca.txt'
@@ -34,42 +32,47 @@ else:
     ESWI.to_csv('ESWIroca.txt', index=False)            # saglabā, lai nebūtu tas vēlreiz jādara
 
 
+cb = gpd.read_file('ne_110m_admin_0_countries')
+cb = cb.assign(MESSAGES=0)
 
-if False:
+if True:
     c = Counter()
+    valstis = Counter()
     empty_messages = set()
+    nezinamas_valstis = set()
     friends = ESWI[ESWI["Receivers"].apply(lambda x: 'UMRR' in x)]
+    # apakštabula, kur adresāti iekļauj UMRR
     for CC in friends["CCCC"]:
         if (Vol["CCCC"] == CC).any():
             names = Vol[Vol["CCCC"] == CC].iloc[0,2]
-            # possibles = pycountry.countries.search_fuzzy(names)
-            # print(possibles)
-            # print(pycountry.subdivisions.search_fuzzy(names))
-            # # possibles.append(pycountry.subdivisions.search_fuzzy(names))
-            # print(possibles)
-            # country = possibles[0].alpha_3
+            # nosaukums valstij, kuras CCCC tiek apskatīts
+            if pycountry.countries.get(name=names):
+                valstis[pycountry.countries.get(name=names).alpha_3] += 1
+            elif pycountry.countries.get(official_name=names):
+                valstis[pycountry.countries.get(official_name=names).alpha_3] += 1
+            else:
+                nezinamas_valstis.add(names)
             c[names]+= 1
-            # TODO: valstis nestrādā.
         else:
             empty_messages.add(CC)
-    # print(c)
-    # print("Šie CCC netika atrasti: \n", empty_messages)
-    print(c.most_common()[:-30])
+    print("Nezināmie: ", nezinamas_valstis)
+    print("CCCC bez attiecīgas valsts: ", empty_messages)
+    print("USA" in valstis)
+    print(cb[cb['SOV_A3']=='USA'])
+    # for el in c.most_common():
+    #     print(f"\item[{el[1]}] {el[0]}")
+    for valsts in valstis:
+        cb.loc[cb['ADM0_A3']==valsts, 'MESSAGES'] = valstis[valsts]
 
-country_boundaries = gpd.read_file('ne_110m_admin_0_countries')
-country_boundaries.plot()
-plt.show()
 
-# fig = plt.figure(figsize=(20, 10))
-# ax = fig.add_subplot()
-# country_boundaries.plot(
-#     ax=ax,
-#     cmap="Pastel1",
-#     edgecolor="black",
-#     alpha=0.5
-# )
+cb.plot(column='MESSAGES', legend=True)
+if SHOW:
+    plt.show()
+else:
+    plt.savefig("pasaule.png")
 
-if False:
+
+if True:
     for _, row in Vol.iterrows():
         folder = f"./data/{row['Region']}/{row['RTH']}/{row['Country']}/{row['CCCC']}/"
         if not os.path.exists(folder):
@@ -77,14 +80,12 @@ if False:
         name = f"{row['Country']}_{row['TTAAii']}_{row['CCCC']}_{row['TimeGroup']}.txt"
         row.to_csv(os.path.join(folder, name) , index=False, header=False, quoting=csv.QUOTE_ALL)
 
-# homepath = '/Users/anete/Documents/Meteorologija/'
-
-nosaukumi = ['UMRR', 'ESWI', 'EEMH']
-for cc in nosaukumi:
-    print(f"Mape {cc}:")
-    # zinām, cik apakšmapēs mums ir jāskatās
-    faili = glob.glob(f"/Users/anete/Documents/Meteorologija/data/*/*/*/{cc}/*")
-    for fails in faili:
-        print(os.path.relpath(fails))
+    nosaukumi = ['UMRR', 'ESWI', 'EEMH']
+    for cc in nosaukumi:
+        print(f"Mape {cc}:")
+        # zinām, cik apakšmapēs mums ir jāskatās
+        faili = glob.glob(f"./data/*/*/*/{cc}/*")
+        for fails in faili:
+            print(os.path.relpath(fails))
 
 
