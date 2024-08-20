@@ -51,7 +51,35 @@ Pēc šo datu pārvēršanas par \texttt{NA} varam vēlreiz apskatīt kastu graf
 \end{minipage}
 
 
-Tagad staciju mērījumi ir daudz salīdzināmāki un varam aprēķināt vidējās vērtības, kas redzamas \ref{tab:videjais}.~tabulā.
+Tagad staciju mērījumi ir daudz salīdzināmāki, taču varam apskatīt arī datus katrā stacijā.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=14cm]{x1.png}
+    \caption{Pirmās stacijas mērījumi}\label{fig:x1}
+\end{figure}
+Pirmajā stacijā marta beigās un aprīļa sākumā arī ir notikusi sensora kļūme, jo lēciens uz vērtībām, kas sākas ap 7, ir ļoti pēkšņs, un tāds pats ir arī kritiens atpakaļ. Arī pārējās stacijās šāds lēciens nav novērojams, līdz ar to varam pieņemt šo kā kļūdu, taču šos datus ir daudz grūtāk izolēt, jo katra konkrētā vērtība ir pieļaujama, tādēļ vispirms mēģināsim dziļāk analizēt datus un tikai tad apskatīsim vidējās vērtības.
+
+% Lai arī dati katrā stacijā noteikti nav neatkarīgi viens no otra (dabas parādību novērojuma iespējamība noteikti ir atkarīga no iepriekšējās minūtes), datu ir tik daudz, ka vienkāršības labad varam pieņemt neatkarību.
+Ir uzreiz skaidrs, ka novērojumi nav neatkarīgi: ja visas stacijas ir diezgan tuvu vai vērstas vienā virzienā, tad vienā un tajā pašā minūtē novērojumi, visticamāk, būs līdzīgi. Arī katrā atsevišķajā stacijā novērojumi nav neatkarīgi, jo dabas parādības notikuma iespējamība noteikti ir atkarīga no iepriekšējās minūtes, taču datu daudzums ļauj mums vispirms iztēloties, ka novērojumi ir neatkarīgi.
+
+Tiem piemeklējot datu sadalījumu, redzam, ka dati pieņem reālas pozitīvas vērtības, un katrā stacijā gandrīz puse no mērījumiem ir starp 0 un 2, kā arī \(75\%\) mērījumu ir zem 4. Līdz ar to sadalījuma grafiks atrodas augstu starp 0 un 4, un no 500 000 mērījumiem trīs stacijās neviens nepārsniedz 16 (protams, izņemot dažus kļūdainos mērījumus). Vispārīgākais sadalījums šādam gadījumam būtu Gamma sadalījums, kuram mums jāatrod forma un mērogs. 
+Diemžēl pat vienkāršam \(\Gamma(k, 1)\) sadalījumam nevar precīzi atrast aptuveno vērtību (estimator) formai \(k\), līdz ar to nāksies pieņemt formu \(k=3,5\), kurai lielākā daļa atrodas zem 4, un tad piemeklēt mērogu \(\theta=0,8\), kas augšējo asti izstiepj pareiza garuma. Kā redzams \ref{gamma}.~figūrā, kastu grafiks atbilst esošajiem datiem, tomēr mērījumu atkarība vienam no otra ir pārāk redzama \ref{fig:x1}.~figūrā, kā, piemēram, redzams, ka mērījumu vidējā vērtība gada beigās sāk pieaugt, ko ar vienkāršu Gammas sadalījumu nevar uzmodelēt.
+
+Lai analizētu novērojumu dispersiju (variance), varam apskatīt to starpības: cik ļoti nākamais mērījums atšķiras no iepriekšējā. Tas ļauj mums atbrīvoties no vidējās vērtības līknes un apskatīt tikai dispersiju \ref{fig:starpibas}.~ figūrā. 
+Varam arī ievērot to, ka starpības starp diviem mērījumiem nav neatkarīgas, jo oktobrī starpības ir pieaugušas, dati ir krasāk mainījušies, un pēc tam starpības ir arī pierimušas.
+
+Varam ievērot divus pīķus marta beigās un aprīļa sākumā, kuros nobīdījās sensora mērījumi. Tos varam izmantot, jo tie ir lielākie pozitīvie un negatīvie lēcieni mūsu datos, un visi mērījumi starp tiem ir lielāki par 7.0, tādēļ atņemsim no šiem mērījumiem 7.0.
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=14cm]{starpibas.png}
+    \caption{Pirmās stacijas mērījumu starpības}\label{fig:starpibas}
+\end{figure}
+
+
+Tā kā datos vairs nav acīmredzamu kļūdu, varam aprēķināt vidējās vērtības, kas redzamas \ref{tab:videjais}.~tabulā.
+
+
 \begin{table}
     \caption{Vidējās vērtības katrā stacijā pa mēnešiem}\label{tab:videjais}
     \centering
@@ -61,8 +89,8 @@ Tagad staciju mērījumi ir daudz salīdzināmāki un varam aprēķināt vidēj�
         \midrule
         1  &  2.212  &  1.984  &  2.690 \\
         2  &  3.184  &  nan  &  3.841 \\
-        3  &  4.168  &  2.335  &  2.389 \\
-        4  &  3.019  &  2.703  &  2.764 \\
+        3  &  2.189  &  2.335  &  2.389 \\
+        4  &  2.446  &  2.703  &  2.764 \\
         5  &  1.962  &  2.080  &  2.129 \\
         6  &  2.251  &  2.147  &  2.380 \\
         7  &  2.103  &  2.025  &  2.303 \\
@@ -74,12 +102,6 @@ Tagad staciju mērījumi ir daudz salīdzināmāki un varam aprēķināt vidēj�
         \bottomrule
     \end{tabular}
 \end{table}
-
-% Lai arī dati katrā stacijā noteikti nav neatkarīgi viens no otra (dabas parādību novērojuma iespējamība noteikti ir atkarīga no iepriekšējās minūtes), datu ir tik daudz, ka vienkāršības labad varam pieņemt neatkarību.
-Ir uzreiz skaidrs, ka novērojumi nav neatkarīgi: ja visas stacijas ir diezgan tuvu vai vērstas vienā virzienā, tad vienā un tajā pašā minūtē novērojumi, visticamāk, būs līdzīgi. Arī katrā atsevišķajā stacijā novērojumi nav neatkarīgi, jo dabas parādības notikuma iespējamība noteikti ir atkarīga no iepriekšējās minūtes. Tomēr datu daudzums ļauj mums 
-
-Piemeklējot datu sadalījumu, redzam, ka dati pieņem reālas pozitīvas vērtības, un katrā stacijā gandrīz puse no mērījumiem ir starp 0 un 2, kā arī \(75\%\) mērījumu ir zem 4. Līdz ar to sadalījuma grafiks atrodas augstu starp 0 un 4, un no 500 000 mērījumiem trīs stacijās neviens nepārsniedz 16 (protams, izņemot dažus kļūdainos mērījumus). Vispārīgākais sadalījums šādam gadījumam būtu Gamma sadalījums, kuram mums jāatrod forma un mērogs. 
-Diemžēl pat vienkāršam \(\Gamma(k, 1)\) sadalījumam nevar precīzi atrast aptuveno vērtību (estimator) formai \(k\), līdz ar to nāksies pieņemt formu \(k=3,5\), kurai lielākā daļa atrodas zem 4, un tad piemeklēt mērogu \(\theta=0,8\), kas augšējo asti izstiepj pareiza garuma. Kā redzams \ref{gamma}.~figūrā, kastu grafiks atbilst esošajiem datiem.
 
 
 

@@ -2,18 +2,18 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 np.random.default_rng(seed=100)
-SHOW = True
+SHOW=True
 
 df = pd.read_csv('Data_intreview.csv', )
 df['Datums.un.laiks'] = '2000.' + df['Datums.un.laiks'].astype(str)
 df['Datums.un.laiks'] = pd.to_datetime(df['Datums.un.laiks'], format="%Y.%m.%d %H:%M")
 # Pamatgads 1900 nav garais gads, taču datos ir 29 februāris, līdz ar to jāpieņem kāds garais gads. Diemžēl datetime nesanāca nekā sakarīgi nomainīt gadu pirms datuma nolasīšanas, līdz ar to nākas savienot divus tekstus un tad salauzt tos.
-
+df = df.sort_values(by='Datums.un.laiks')
 
 df.boxplot(column=["x1", "x2", "x3"])
 # plt.title("Kastu grafiki trīs stacijās")
 if SHOW:
-    plt.plot()
+    plt.show()
 else:
     plt.savefig('kastes_kluda.png', dpi=150)
 fig = plt.figure()
@@ -26,6 +26,24 @@ print("Elementi, kuri ir lielāki trešajā stacijā par lielākajām vērtībā
 
 df[df["x3"]>cutoff]=np.nan           # pārvērš milzīgās vērtības par NaN
 
+
+mins, maxs = np.nanargmin(np.diff(df['x1'])), np.nanargmax(np.diff(df['x1']))
+# atradām lielākos izmaiņu pīķus
+minimum = np.nanmin(df['x1'].iloc[maxs+1:mins])
+# aprēķinām, kāda ir mazākā vērtība starp pīķiem un atņemam to
+df['x1'].iloc[maxs+1:mins] = df['x1'].iloc[maxs+1:mins] - minimum
+
+plt.plot(df["Datums.un.laiks"][:-1], np.diff(df['x1']))
+if SHOW:
+    plt.show()
+else:
+    plt.savefig('starpibas.png')
+
+plt.plot(df["Datums.un.laiks"], df['x1'])
+if SHOW:
+    plt.show()
+else:
+    plt.savefig("x1.png")
 
 
 avgs = np.empty([12,3])
